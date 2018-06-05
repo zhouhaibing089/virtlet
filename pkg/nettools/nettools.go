@@ -786,7 +786,9 @@ func SetupContainerSideNetwork(info *cnicurrent.Result, nsPath string, allLinks 
 		} else {
 			newHwAddr, err := GenerateMacAddress()
 			if err == nil {
-				err = SetHardwareAddr(link, newHwAddr)
+				if link.Type() != "ipvlan" {
+					err = SetHardwareAddr(link, newHwAddr)
+				}
 			}
 			if err != nil {
 				return nil, err
@@ -1030,8 +1032,10 @@ func Teardown(csn *network.ContainerSideNetwork) error {
 				return err
 			}
 
-			if err := SetHardwareAddr(contLink, csn.Interfaces[i].HardwareAddr); err != nil {
-				return err
+			if contLink.Type() != "ipvlan" {
+				if err := SetHardwareAddr(contLink, csn.Interfaces[i].HardwareAddr); err != nil {
+					return err
+				}
 			}
 		}
 
